@@ -15,6 +15,19 @@ INK = "#0b0b0b"
 INK_2 = "#52514e"
 GRID = "#e4e3df"
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#6250d6"]  # fixed order, validated palette
+BENCH = "#8f8e88"  # buy & hold is always neutral grey so strategies keep the colour
+
+
+def _colors(names):
+    """Benchmark in grey, strategies take categorical slots in fixed order."""
+    out, i = [], 0
+    for n in names:
+        if n.lower().startswith("buy"):
+            out.append(BENCH)
+        else:
+            out.append(SERIES[i])
+            i += 1
+    return out
 
 
 def _style(ax):
@@ -43,8 +56,8 @@ def _title(ax, title, subtitle=None):
 
 def equity_chart(equities: dict[str, pd.Series], path: Path, title: str, subtitle: str = "") -> Path:
     fig, ax = _fig()
-    for i, (name, eq) in enumerate(equities.items()):
-        ax.plot(eq.index, eq.values, color=SERIES[i], linewidth=1.8, label=name)
+    for color, (name, eq) in zip(_colors(equities), equities.items()):
+        ax.plot(eq.index, eq.values, color=color, linewidth=1.8, label=name)
         ax.annotate(
             f"{eq.iloc[-1]:.1f}x",
             (eq.index[-1], eq.iloc[-1]),
@@ -65,12 +78,13 @@ def equity_chart(equities: dict[str, pd.Series], path: Path, title: str, subtitl
 
 
 def drawdown_chart(drawdowns: dict[str, pd.Series], path: Path, title: str, subtitle: str = "") -> Path:
-    fig, ax = _fig(h=3.6)
-    for i, (name, dd) in enumerate(drawdowns.items()):
-        ax.plot(dd.index, dd.values * 100, color=SERIES[i], linewidth=1.4, label=name)
+    fig, ax = _fig(h=3.9)
+    for color, (name, dd) in zip(_colors(drawdowns), drawdowns.items()):
+        ax.plot(dd.index, dd.values * 100, color=color, linewidth=1.4, label=name)
     ax.set_ylabel("Drawdown from peak (%)", color=INK_2, fontsize=9)
     ax.axhline(0, color=GRID, linewidth=1)
-    ax.legend(frameon=False, fontsize=9, loc="lower left", labelcolor=INK, ncol=len(drawdowns))
+    ax.legend(frameon=False, fontsize=9, loc="upper center", bbox_to_anchor=(0.5, -0.08),
+              labelcolor=INK, ncol=len(drawdowns))
     _title(ax, title, subtitle)
     fig.tight_layout()
     fig.savefig(path, facecolor=SURFACE)
@@ -85,7 +99,7 @@ def sharpe_ci_chart(ci: pd.DataFrame, path: Path, title: str, subtitle: str = ""
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ys = range(len(ci))[::-1]
     for y, (label, row) in zip(ys, ci.iterrows()):
-        color = SERIES[1] if row.get("is_benchmark", False) else SERIES[0]
+        color = BENCH if row.get("is_benchmark", False) else SERIES[0]
         ax.plot([row.ci_low, row.ci_high], [y, y], color=color, linewidth=2, solid_capstyle="round")
         ax.plot(row.estimate, y, "o", color=color, markersize=7, markeredgecolor=SURFACE, markeredgewidth=1.5)
         ax.annotate(f"{row.estimate:.2f}", (row.ci_high, y), xytext=(6, 0), textcoords="offset points",

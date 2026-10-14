@@ -170,7 +170,7 @@ def run_all(cfg: Config, verbose: bool = True) -> dict:
     best = (
         summary_df.loc["portfolio"].drop(index="buy_hold")["sharpe"].idxmax()
     )
-    shown = ["buy_hold", best] + [s for s in ("tsmom", "ma_cross_vt") if s != best][:1]
+    shown = ["buy_hold", best, "ma_cross" if best != "ma_cross" else "tsmom"]
     port_start = portfolio["buy_hold"].index[0].date()
     port_end = portfolio["buy_hold"].index[-1].date()
     sub = f"Equal-weight BTC + ETH, out-of-sample {port_start} to {port_end}, after {cfg.fee_bps + cfg.slippage_bps:.0f} bps costs per trade"
