@@ -1,0 +1,16 @@
+scenario,strategy,cagr,sharpe,max_drawdown
+base,buy_hold,0.292558,0.722203,-0.813777
+base,tsmom,0.221285,0.650016,-0.728346
+base,tsmom_vt,0.255390,0.909192,-0.506557
+base,ma_cross,0.271368,0.758814,-0.558940
+base,ma_cross_vt,0.173397,0.690296,-0.428898
+2x costs,buy_hold,0.292558,0.722203,-0.813777
+2x costs,tsmom,0.139967,0.519254,-0.748449
+2x costs,tsmom_vt,0.095218,0.457014,-0.474046
+2x costs,ma_cross,0.264324,0.740801,-0.535781
+2x costs,ma_cross_vt,0.163660,0.661486,-0.431857
++1 day delay,buy_hold,0.292558,0.722203,-0.813777
++1 day delay,tsmom,0.195697,0.609786,-0.747394
++1 day delay,tsmom_vt,0.096879,0.456344,-0.639862
++1 day delay,ma_cross,0.292803,0.794146,-0.474525
++1 day delay,ma_cross_vt,0.175318,0.700044,-0.427298
