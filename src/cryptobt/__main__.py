@@ -48,7 +48,7 @@ def main(argv: list[str] | None = None) -> None:
             data_dir=a.data_dir, out_dir=a.out_dir,
         )
         res = run_all(cfg)
-        cols = ["cagr", "sharpe", "max_drawdown", "dsr"]
+        cols = ["cagr", "sharpe", "max_drawdown", "time_in_market"]
         print(res["summary"].loc["portfolio"][cols].round(3).to_string())
 
 
