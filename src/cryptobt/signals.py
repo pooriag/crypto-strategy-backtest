@@ -66,6 +66,29 @@ def vol_target(
     return (position * scale).rename("position")
 
 
+def no_trade_band(target: pd.Series, band: float = 0.10) -> pd.Series:
+    """Only move to a new target when it differs from the current position by more than ``band``.
+
+    Volatility targeting rescales the position a little every day; most of those
+    small trades cost more than they add. A band keeps the position unchanged
+    until the gap is material. Moves to or from flat (0) are always executed, so
+    entry/exit signals are never delayed. The rule is path-dependent but causal:
+    the output at t depends only on targets up to t.
+    """
+    if band <= 0:
+        return target
+    vals = target.to_numpy(dtype=float)
+    out = np.full_like(vals, np.nan)
+    cur = np.nan
+    for i, v in enumerate(vals):
+        if np.isnan(v):
+            cur = np.nan
+        elif np.isnan(cur) or v == 0 or cur == 0 or abs(v - cur) > band:
+            cur = v
+        out[i] = cur
+    return pd.Series(out, index=target.index, name="position")
+
+
 # --------------------------------------------------------------------------- #
 # Strategy families used by the walk-forward optimiser
 # --------------------------------------------------------------------------- #
@@ -77,10 +100,12 @@ class StrategyFamily:
     func: Callable[..., pd.Series]
     grid: tuple[dict, ...]
 
-    def positions(self, close: pd.Series, params: dict, vol_targeted: bool = False, **vt_kwargs) -> pd.Series:
+    def positions(
+        self, close: pd.Series, params: dict, vol_targeted: bool = False, band: float = 0.0, **vt_kwargs
+    ) -> pd.Series:
         pos = self.func(close, **params)
         if vol_targeted:
-            pos = vol_target(pos, close, **vt_kwargs)
+            pos = no_trade_band(vol_target(pos, close, **vt_kwargs), band)
         return pos
 
 

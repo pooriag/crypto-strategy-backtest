@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cryptobt.signals import FAMILIES, buy_and_hold, ma_crossover, tsmom, vol_target
+from cryptobt.signals import FAMILIES, buy_and_hold, ma_crossover, no_trade_band, tsmom, vol_target
 
 
 @pytest.fixture
@@ -19,6 +19,7 @@ def close():
         lambda c: tsmom(c, 30, allow_short=True),
         lambda c: ma_crossover(c, 10, 50),
         lambda c: vol_target(tsmom(c, 30), c, 0.4, 20),
+        lambda c: no_trade_band(vol_target(tsmom(c, 30), c, 0.4, 20), 0.1),
     ],
 )
 def test_signals_do_not_look_ahead(close, fn):
@@ -58,3 +59,17 @@ def test_bad_params():
         tsmom(c, 0)
     with pytest.raises(ValueError):
         ma_crossover(c, 50, 20)
+
+
+def test_no_trade_band():
+    t = pd.Series([np.nan, 0.50, 0.55, 0.62, 0.0, 0.3, 0.35], index=pd.date_range("2020-01-01", periods=7))
+    out = no_trade_band(t, 0.10)
+    assert out.tolist()[1:] == [0.50, 0.50, 0.62, 0.0, 0.3, 0.3]
+    assert np.isnan(out.iloc[0])
+    pd.testing.assert_series_equal(no_trade_band(t, 0.0), t)
+
+
+def test_band_reduces_turnover(close):
+    raw = vol_target(tsmom(close, 30), close, 0.4, 20)
+    banded = no_trade_band(raw, 0.1)
+    assert banded.diff().abs().sum() < raw.diff().abs().sum()
