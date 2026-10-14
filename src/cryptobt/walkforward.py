@@ -48,6 +48,7 @@ def walk_forward(
     costs: Costs = Costs(),
     vol_targeted: bool = False,
     vt_kwargs: dict | None = None,
+    delay: int = 1,
 ) -> WalkForwardResult:
     close = close.dropna()
     vt_kwargs = vt_kwargs or {}
@@ -55,7 +56,7 @@ def walk_forward(
     # Signals are causal (see tests), so each grid point can be computed once on the
     # full history and sliced later without leaking future information.
     targets = {_param_key(p): family.positions(close, p, vol_targeted, **vt_kwargs) for p in family.grid}
-    nets = {k: run_backtest(close, t, costs)["net"] for k, t in targets.items()}
+    nets = {k: run_backtest(close, t, costs, delay)["net"] for k, t in targets.items()}
     params = {_param_key(p): p for p in family.grid}
 
     dates = close.index
@@ -92,7 +93,7 @@ def walk_forward(
     oos_start = pd.Timestamp(rows[0]["test_start"])
     # Run on the full history so the position entering the first OOS day is charged,
     # then keep OOS days only. Before oos_start the stitched target is NaN => flat.
-    bt = run_backtest(close, stitched, costs).loc[oos_start:]
+    bt = run_backtest(close, stitched, costs, delay).loc[oos_start:]
     # The day-before-OOS target is NaN, so the first OOS day is flat; that is the
     # honest outcome (we only start trading once the first model is chosen).
     trial_sharpes = pd.Series(
