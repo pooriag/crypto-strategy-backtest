@@ -1,6 +1,6 @@
 # Crypto Strategy Backtest
 
-[![tests](https://github.com/OWNER/crypto-strategy-backtest/actions/workflows/tests.yml/badge.svg)](https://github.com/OWNER/crypto-strategy-backtest/actions/workflows/tests.yml)
+[![tests](https://github.com/pooriag/crypto-strategy-backtest/actions/workflows/tests.yml/badge.svg)](https://github.com/pooriag/crypto-strategy-backtest/actions/workflows/tests.yml)
 
 Do simple trend-following rules actually beat buying and holding BTC and ETH, once you
 remove look-ahead bias, pay realistic trading costs and account for how many variants
@@ -63,7 +63,7 @@ the harder question, "is it better than just holding?", and the answer is no.
 ## Run it
 
 ```bash
-git clone https://github.com/OWNER/crypto-strategy-backtest.git
+git clone https://github.com/pooriag/crypto-strategy-backtest.git
 cd crypto-strategy-backtest
 pip install -e ".[dev]"
 
